@@ -106,7 +106,7 @@ def main():
 
     voxmean=N.mean(imgdata,3)
     voxstd=N.std(imgdata,3)
-    voxcv=voxstd/voxmean
+    voxcv=voxstd/N.abs(voxmean)
     voxcv[N.isnan(voxcv)]=0
     voxcv[voxcv>1]=1
     
