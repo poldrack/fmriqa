@@ -107,6 +107,8 @@ def main():
     voxmean=N.mean(imgdata,3)
     voxstd=N.std(imgdata,3)
     voxcv=voxstd/voxmean
+    voxcv[N.isnan(voxcv)]=0
+    voxcv[voxcv>1]=1
     
     # compute timepoint statistics
     
@@ -127,7 +129,7 @@ def main():
         maskcv[t]=maskmad[t]/maskmedian[t]
         imgsnr[t]=maskmedian[t]/N.median(tmp_nonbrain)
         
-        
+ 
     # perform Greve et al./fBIRN spike detection
     #1. Remove mean and temporal trend from each voxel.
     #2. Compute temporal Z-score for each voxel.
@@ -215,7 +217,14 @@ def main():
     #print badvols_expanded_index
     if len(badvols_expanded_index)>0:
         N.savetxt(os.path.join(qadir,'scrubvols.txt'),badvols_expanded_index,fmt='%d')
-                  
+
+        # make scrubing design matrix - one colum per scrubbed timepoint
+        scrubdes=N.zeros((len(DVARS),len(badvols_expanded_index)))
+        for i in range(len(badvols_expanded_index)):
+            scrubdes[badvols_expanded_index[i],i]=1
+        N.savetxt(os.path.join(qadir,'scrubdes.txt'),scrubdes,fmt='%d')
+    
+                     
     #plot_timeseries(scaledmean,'Mean in-mask signal (Z-scored)',
     #            os.path.join(qadir,'scaledmaskmean.png'),spikes,'Potential spikes')
     
