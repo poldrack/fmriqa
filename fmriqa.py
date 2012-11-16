@@ -3,6 +3,7 @@
 fMRI quality control
 - adapted from fsld_raw.R and fBIRN QA tools
 
+USAGE: fmriqa.py bold_mcf.nii.gz <TR>
 """
 
 import numpy as N
@@ -103,7 +104,7 @@ def main():
     motpars=N.loadtxt(motfile)
     fd=compute_fd(motpars)
     N.savetxt(os.path.join(qadir,'fd.txt'),fd)
-
+    
     voxmean=N.mean(imgdata,3)
     voxstd=N.std(imgdata,3)
     voxcv=voxstd/N.abs(voxmean)
@@ -223,8 +224,21 @@ def main():
         for i in range(len(badvols_expanded_index)):
             scrubdes[badvols_expanded_index[i],i]=1
         N.savetxt(os.path.join(qadir,'scrubdes.txt'),scrubdes,fmt='%d')
+
+    else:
+        scrubdes=[]
+        
+    # save out complete confound file
+    confound_mtx=N.zeros((len(DVARS),14))
+    confound_mtx[:,0:6]=motpars
+    confound_mtx[1:,6:12]=motpars[:-1,:]-motpars[1:,:] # derivs
+    confound_mtx[:,12]=fd
+    confound_mtx[:,13]=DVARS
+    if not scrubdes==[]:
+        confound_mtx=N.hstack((confound_mtx,scrubdes))
+
+    N.savetxt(os.path.join(qadir,'confound.txt'),confound_mtx)
     
-                     
     #plot_timeseries(scaledmean,'Mean in-mask signal (Z-scored)',
     #            os.path.join(qadir,'scaledmaskmean.png'),spikes,'Potential spikes')
     
