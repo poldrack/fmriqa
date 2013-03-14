@@ -15,7 +15,7 @@ Dependencies:
 - scikit-learn
 - reportlab
 
-USAGE: fmriqa.py <bold_mcf.nii.gz file>
+USAGE: fmriqa.py bold_mcf.nii.gz (or any suitably named file)
 
 - this main program takes in a motion-corrected image and performs QA
 -- report is saved to a subdirectory called QA
