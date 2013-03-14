@@ -41,7 +41,8 @@ def error_and_exit(msg):
     
 def main():
     verbose=False
-        
+    save_sfnr=True
+    
     if len(sys.argv)>2:
         infile=sys.argv[1]
         TR=float(sys.argv[2])
@@ -291,6 +292,9 @@ def main():
     f.write('nspikes,%d\n'%len(datavars['spikes']))
     f.write('nscrub,%d\n'%len(datavars['badvols']))
     f.close()
-    
+
+    if save_sfnr:
+        sfnrimg=nib.Nifti1Image(voxsfnr,img.get_affine())
+        sfnrimg.to_filename(os.path.join(qadir,'voxsfnr.nii.gz'))
 if __name__=='__main__':
     main()
