@@ -40,14 +40,20 @@ def mk_slice_mosaic(imgdata,outfile,title,contourdata=[],ncols=6,colorbar=True):
                     print rowstart,rowend,colstart,colend
                     if min_dim==0:
                         imgslice=imgdata[ctr,:,::-1].T
+                        if not contourdata==[]:
+                            contourslice=contourdata[ctr,:,::-1].T             
                     elif min_dim==1:
                         imgslice=imgdata[:,ctr,::-1].T
+                        if not contourdata==[]:
+                            contourslice=contourdata[:,ctr,::-1].T       
                     elif min_dim==2:
                         imgslice=imgdata[:,::-1,ctr].T
+                        if not contourdata==[]:
+                            contourslice=contourdata[:,::-1,ctr].T          
                     print imgslice.shape
                     mosaic[rowstart:rowend,colstart:colend]=imgslice
                     if not contourdata==[]:
-                        contourmosaic[rowstart:rowend,colstart:colend]=contourdata[:,::-1,ctr].T
+                        contourmosaic[rowstart:rowend,colstart:colend]=contourslice
                     ctr+=1
     elif dir=='saggital':
         nrows=int(N.ceil(N.float(imgdata.shape[1])/ncols))
