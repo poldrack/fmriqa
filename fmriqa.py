@@ -47,9 +47,9 @@ def main():
         infile=sys.argv[1]
         TR=float(sys.argv[2])
     else:
-        error_and_exit('')
-        #infile='/scratch/01329/poldrack/connectome-genome/EH0109/epi/EH0109_epi_mcf.nii.gz'
-        #TR=3.0
+        #error_and_exit('')
+        infile='/corral-repl/utexas/poldracklab/openfmri/shared2/ds105/sub001/BOLD/task001_run001/bold_mcf.nii.gz'
+        TR=2.5
 
     
     if os.path.dirname(infile)=='':
@@ -275,6 +275,11 @@ def main():
     plt.title('Spike measure (absolute jackknife Z)')
     plt.savefig(os.path.join(qadir,'spike.png'),bbox_inches='tight')
     plt.close()
+
+    if img.shape[0]<img.shape[1] and img.shape[0]<img.shape[2]:
+        orientation='saggital'
+    else:
+        orientation='axial'
     
     mk_slice_mosaic(voxmean,os.path.join(qadir,'voxmean.png'),'Image mean (with mask)',contourdata=maskdata)
     mk_slice_mosaic(voxcv,os.path.join(qadir,'voxcv.png'),'Image CV')
