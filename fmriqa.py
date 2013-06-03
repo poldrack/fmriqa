@@ -47,9 +47,9 @@ def main():
         infile=sys.argv[1]
         TR=float(sys.argv[2])
     else:
-        #error_and_exit('')
-        infile='/corral-repl/utexas/poldracklab/openfmri/shared2/ds105/sub001/BOLD/task001_run001/bold_mcf.nii.gz'
-        TR=2.5
+        error_and_exit('')
+        #infile='/corral-repl/utexas/poldracklab/openfmri/shared2/ds105/sub001/BOLD/task001_run001/bold_mcf.nii.gz'
+        #TR=2.5
 
     
     if os.path.dirname(infile)=='':
