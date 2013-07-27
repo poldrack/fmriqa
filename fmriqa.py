@@ -41,17 +41,26 @@ def error_and_exit(msg):
     
 def main():
     verbose=False
-    save_sfnr=True
     
     if len(sys.argv)>2:
         infile=sys.argv[1]
         TR=float(sys.argv[2])
     else:
+<<<<<<< HEAD
+        #error_and_exit('')
+        infile='/Users/poldrack/data_unsynced/fmriqa/HCP/bold_mcf.nii.gz'
+        TR=0.72
+=======
         error_and_exit('')
         #infile='/corral-repl/utexas/poldracklab/openfmri/shared2/ds105/sub001/BOLD/task001_run001/bold_mcf.nii.gz'
         #TR=2.5
+>>>>>>> c417b2c1302a4c7dc26a42fdcca7e807c7188e95
 
+    qadir=fmriqa(infile,TR,verbose=verbose)
     
+def fmriqa(infile,TR,outdir=None,maskfile=None,motfile=None,verbose=False):
+    save_sfnr=True
+
     if os.path.dirname(infile)=='':
         basedir=os.getcwd()
         infile=os.path.join(basedir,infile)
@@ -61,20 +70,25 @@ def main():
     else:
         basedir=os.path.dirname(infile)
         
-    qadir=os.path.join(basedir,'QA')
-    
+    if outdir==None:
+        outdir=basedir
+        
+    qadir=os.path.join(outdir,'QA')
+
     if not infile.find('mcf.nii.gz')>0:
         error_and_exit('infile must be of form XXX_mcf.nii.gz')
         
     if not os.path.exists(infile):
         error_and_exit('%s does not exist!'%infile)
-        
-    maskfile=infile.replace('mcf.nii','mcf_brain_mask.nii')
+
+    if maskfile==None:
+        maskfile=infile.replace('mcf.nii','mcf_brain_mask.nii')
     
     if not os.path.exists(maskfile):
         error_and_exit('%s does not exist!'%maskfile)
-    
-    motfile=infile.replace('mcf.nii.gz','mcf.par')
+
+    if motfile==None:
+        motfile=infile.replace('mcf.nii.gz','mcf.par')
     if not os.path.exists(motfile):
         error_and_exit('%s does not exist!'%motfile)
     
@@ -86,6 +100,10 @@ def main():
        
     
     if verbose:
+        print 'infile:',infile
+        print 'maskfile:',maskfile
+        print 'motfile:',motfile
+        print 'outdir:',outdir
         print 'computing image stats'
         
     img=nib.load(infile)
@@ -98,6 +116,8 @@ def main():
     maskdata=maskimg.get_data()
     maskvox=N.where(maskdata>0)
     nonmaskvox=N.where(maskdata==0)
+    if verbose:
+        print 'nmaskvox:',len(maskvox[0])
     
     # load motion parameters and compute FD and identify bad vols for
     # potential scrubbing (ala Power et al.)
@@ -186,6 +206,7 @@ def main():
     voxstd_detrended=N.std(detrended_data,3)
     voxsfnr=voxmean/voxstd
     meansfnr=N.mean(voxsfnr[maskvox])
+    
     # create plots
     
     #
@@ -301,5 +322,9 @@ def main():
     if save_sfnr:
         sfnrimg=nib.Nifti1Image(voxsfnr,img.get_affine())
         sfnrimg.to_filename(os.path.join(qadir,'voxsfnr.nii.gz'))
+
+    return qadir
+
 if __name__=='__main__':
     main()
+    
