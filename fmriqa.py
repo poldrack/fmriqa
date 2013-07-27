@@ -46,15 +46,9 @@ def main():
         infile=sys.argv[1]
         TR=float(sys.argv[2])
     else:
-<<<<<<< HEAD
-        #error_and_exit('')
-        infile='/Users/poldrack/data_unsynced/fmriqa/HCP/bold_mcf.nii.gz'
-        TR=0.72
-=======
         error_and_exit('')
         #infile='/corral-repl/utexas/poldracklab/openfmri/shared2/ds105/sub001/BOLD/task001_run001/bold_mcf.nii.gz'
         #TR=2.5
->>>>>>> c417b2c1302a4c7dc26a42fdcca7e807c7188e95
 
     qadir=fmriqa(infile,TR,verbose=verbose)
     
