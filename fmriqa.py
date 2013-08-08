@@ -52,7 +52,7 @@ def main():
 
     qadir=fmriqa(infile,TR,verbose=verbose)
     
-def fmriqa(infile,TR,outdir=None,maskfile=None,motfile=None,verbose=False):
+def fmriqa(infile,TR,outdir=None,maskfile=None,motfile=None,verbose=False,plot_data=True):
     save_sfnr=True
 
     if os.path.dirname(infile)=='':
@@ -257,58 +257,62 @@ def fmriqa(infile,TR,outdir=None,maskfile=None,motfile=None,verbose=False):
     
     #plot_timeseries(scaledmean,'Mean in-mask signal (Z-scored)',
     #            os.path.join(qadir,'scaledmaskmean.png'),spikes,'Potential spikes')
-    
-    trend=plot_timeseries(maskmean,'Mean signal (unfiltered)',os.path.join(qadir,'maskmean.png'),
-                    plottrend=True,ylabel='Mean MR signal')
-    
-    plot_timeseries(maskmad,'Median absolute deviation (robust SD)',
-                    os.path.join(qadir,'mad.png'),ylabel='MAD')
-    
-    plot_timeseries(DVARS,'DVARS (root mean squared signal derivative over brain mask)',
-                    os.path.join(qadir,'DVARS.png'),plotline=0.5,ylabel='DVARS')
-    
-    plot_timeseries(fd,'Framewise displacement',os.path.join(qadir,'fd.png'),
-                    badvols_expanded_index,'Timepoints to scrub (%d total)'%len(badvols),
-                    plotline=0.5,ylims=[0,1],ylabel='FD')
-    
-    psd=matplotlib.mlab.psd(maskmean,NFFT=128,noverlap=96,Fs=1/TR)
+
+    datavars={'imgsnr':imgsnr,'meansfnr':meansfnr,'spikes':spikes,'badvols':badvols_expanded_index}
+
+    if plot_data:
+        trend=plot_timeseries(maskmean,'Mean signal (unfiltered)',os.path.join(qadir,'maskmean.png'),
+                        plottrend=True,ylabel='Mean MR signal')
+        datavars['trend']=trend
+        plot_timeseries(maskmad,'Median absolute deviation (robust SD)',
+                        os.path.join(qadir,'mad.png'),ylabel='MAD')
+
+        plot_timeseries(DVARS,'DVARS (root mean squared signal derivative over brain mask)',
+                        os.path.join(qadir,'DVARS.png'),plotline=0.5,ylabel='DVARS')
+
+        plot_timeseries(fd,'Framewise displacement',os.path.join(qadir,'fd.png'),
+                        badvols_expanded_index,'Timepoints to scrub (%d total)'%len(badvols),
+                        plotline=0.5,ylims=[0,1],ylabel='FD')
+
+        psd=matplotlib.mlab.psd(maskmean,NFFT=128,noverlap=96,Fs=1/TR)
+
+        plt.clf()
+        fig=plt.figure(figsize=[10,3])
+        fig.subplots_adjust(bottom=0.15)
+        plt.plot(psd[1][2:],N.log(psd[0][2:]))
+        plt.title('Log power spectrum of mean signal across mask')
+        plt.xlabel('frequency (secs)')
+        plt.ylabel('log power')
+        plt.savefig(os.path.join(qadir,'meanpsd.png'),bbox_inches='tight')
+        plt.close()
+
+        plt.clf()
+        plt.imshow(AJKZ,vmin=0,vmax=AJKZ_thresh)
+        plt.xlabel('timepoints')
+        plt.ylabel('slices')
+        plt.title('Spike measure (absolute jackknife Z)')
+        plt.savefig(os.path.join(qadir,'spike.png'),bbox_inches='tight')
+        plt.close()
+
+        if img.shape[0]<img.shape[1] and img.shape[0]<img.shape[2]:
+            orientation='saggital'
+        else:
+            orientation='axial'
+
+        mk_slice_mosaic(voxmean,os.path.join(qadir,'voxmean.png'),'Image mean (with mask)',contourdata=maskdata)
+        mk_slice_mosaic(voxcv,os.path.join(qadir,'voxcv.png'),'Image CV')
+        mk_slice_mosaic(voxsfnr,os.path.join(qadir,'voxsfnr.png'),'Image SFNR')
+
+
+        mk_report(infile,qadir,datavars)
+
  
-    plt.clf()
-    fig=plt.figure(figsize=[10,3])
-    fig.subplots_adjust(bottom=0.15)
-    plt.plot(psd[1][2:],N.log(psd[0][2:]))
-    plt.title('Log power spectrum of mean signal across mask')
-    plt.xlabel('frequency (secs)')
-    plt.ylabel('log power')
-    plt.savefig(os.path.join(qadir,'meanpsd.png'),bbox_inches='tight')
-    plt.close()
-
-    plt.clf()
-    plt.imshow(AJKZ,vmin=0,vmax=AJKZ_thresh)
-    plt.xlabel('timepoints')
-    plt.ylabel('slices')
-    plt.title('Spike measure (absolute jackknife Z)')
-    plt.savefig(os.path.join(qadir,'spike.png'),bbox_inches='tight')
-    plt.close()
-
-    if img.shape[0]<img.shape[1] and img.shape[0]<img.shape[2]:
-        orientation='saggital'
-    else:
-        orientation='axial'
-    
-    mk_slice_mosaic(voxmean,os.path.join(qadir,'voxmean.png'),'Image mean (with mask)',contourdata=maskdata)
-    mk_slice_mosaic(voxcv,os.path.join(qadir,'voxcv.png'),'Image CV')
-    mk_slice_mosaic(voxsfnr,os.path.join(qadir,'voxsfnr.png'),'Image SFNR')
-
-    datavars={'imgsnr':imgsnr,'meansfnr':meansfnr,'trend':trend,'spikes':spikes,'badvols':badvols_expanded_index}
-    mk_report(infile,qadir,datavars)
-
     # def save_vars(infile,qadir,datavars):
     datafile=os.path.join(qadir,'qadata.csv')
     f=open(datafile,'w')
     f.write('SNR,%f\n'%N.mean(datavars['imgsnr']))
     f.write('SFNR,%f\n'%datavars['meansfnr'])
-    f.write('drift,%f\n'%datavars['trend'].params[1])
+    #f.write('drift,%f\n'%datavars['trend'].params[1])
     f.write('nspikes,%d\n'%len(datavars['spikes']))
     f.write('nscrub,%d\n'%len(datavars['badvols']))
     f.close()
