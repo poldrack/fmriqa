@@ -143,7 +143,7 @@ def fmriqa(infile,TR,outdir=None,maskfile=None,motfile=None,verbose=False,plot_d
         maskmedian[t]=N.median(tmp_brain)
         maskmean[t]=N.mean(tmp_brain)
         maskcv[t]=maskmad[t]/maskmedian[t]
-        imgsnr[t]=maskmedian[t]/N.median(tmp_nonbrain)
+        imgsnr[t]=maskmean[t]/N.std(tmp_nonbrain)
         
  
     # perform Greve et al./fBIRN spike detection
