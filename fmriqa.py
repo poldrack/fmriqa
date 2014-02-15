@@ -6,9 +6,13 @@ fMRI quality control
 USAGE: fmriqa.py bold_mcf.nii.gz <TR>
 """
 
+import ctypes, sys, os
+
+flags = sys.getdlopenflags()
+sys.setdlopenflags(flags|ctypes.RTLD_GLOBAL)
+
 import numpy as N
 import nibabel as nib
-import sys,os
 from compute_fd import *
 from statsmodels.tsa.tsatools import detrend
 import statsmodels.api
@@ -22,6 +26,8 @@ from matplotlib.mlab import psd
 from plot_timeseries import plot_timeseries
 from MAD import MAD
 from mk_report import mk_report
+
+sys.setdlopenflags(flags)
 
 # thresholds for scrubbing and spike detection
 FDthresh=0.5
@@ -40,7 +46,7 @@ def error_and_exit(msg):
 
     
 def main():
-    verbose=False
+    verbose=True
     
     if len(sys.argv)>2:
         infile=sys.argv[1]
@@ -202,7 +208,7 @@ def fmriqa(infile,TR,outdir=None,maskfile=None,motfile=None,verbose=False,plot_d
     meansfnr=N.mean(voxsfnr[maskvox])
     
     # create plots
-    
+
     #
     #imgdata_flat=imgdata.reshape(N.prod(imgdata.shape))
     #imgdata_nonzero=imgdata_flat[imgdata_flat>0.0]
@@ -261,8 +267,10 @@ def fmriqa(infile,TR,outdir=None,maskfile=None,motfile=None,verbose=False,plot_d
     datavars={'imgsnr':imgsnr,'meansfnr':meansfnr,'spikes':spikes,'badvols':badvols_expanded_index}
 
     if plot_data:
+        print 'before plot'
         trend=plot_timeseries(maskmean,'Mean signal (unfiltered)',os.path.join(qadir,'maskmean.png'),
                         plottrend=True,ylabel='Mean MR signal')
+        print 'after plot'
         datavars['trend']=trend
         plot_timeseries(maskmad,'Median absolute deviation (robust SD)',
                         os.path.join(qadir,'mad.png'),ylabel='MAD')
