@@ -6,22 +6,23 @@ import statsmodels.api
 def plot_timeseries(data,title,outfile,markers=[],markername=[],
                     plottrend=False,ylims=[],plotline=[],xlabel='timepoints',
                     ylabel=[]):
-    
+
     fig=plt.figure(figsize=[10,3])
     fig.subplots_adjust(bottom=0.15)
     plt.plot(data)
     datarange=N.abs(N.max(data)-N.min(data))
     ntp=len(data)
+
     if ylims==[]:
         axislims=[0,ntp+1,N.min(data) - datarange*0.1,N.max(data) + datarange*0.1]
     else:
         axislims=[0,ntp-1,ylims[0],ylims[1]]
-        
+
     if plottrend:
         X=N.vstack((N.ones(ntp), N.arange(ntp)- N.mean(N.arange(ntp)),N.arange(ntp)**2-N.mean(N.arange(ntp)**2))).T
         model=statsmodels.api.OLS(data,X)
         results=model.fit()
-    
+
     plt.axis(axislims)
     fig.hold('on')
     if len(markers)>0:
